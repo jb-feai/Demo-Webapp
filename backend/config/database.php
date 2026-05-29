@@ -8,6 +8,16 @@ return [
 
     'connections' => [
 
+        // Used by the automated test suite (see phpunit.xml). Kept in-memory so
+        // tests are fast and never touch your real PostgreSQL data.
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'url' => env('DB_URL'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),

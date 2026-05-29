@@ -80,6 +80,37 @@ npm run build                 # outputs to frontend/dist
 For production, point NGINX at [deploy/nginx/neonmarket.conf](deploy/nginx/neonmarket.conf):
 it serves `frontend/dist` and proxies `/api` to PHP-FPM.
 
+## Seeding more dummy data
+
+`DatabaseSeeder` lays down the initial demo set. To **supplementally** grow the
+network afterwards (additive — never wipes), use the custom Artisan command:
+
+```bash
+cd backend
+php artisan network:populate                                  # +20 users, +60 listings, +40 connections
+php artisan network:populate --users=50 --listings=200 --connections=120
+php artisan network:populate --users=0 --listings=30 --connections=0   # just more listings
+```
+
+New listings are spread across **all** users (old + new), and connections are
+generated coherently (no self-connections, no duplicate pair in either direction).
+
+## Tests
+
+A PHPUnit suite verifies the inserted data is coherent — correct counts, additive
+behaviour, valid foreign keys, unique usernames/emails, well-formed prices, and
+sound connections. Tests run against an isolated in-memory SQLite database
+(configured in [backend/phpunit.xml](backend/phpunit.xml)), so they never touch
+your PostgreSQL data.
+
+```bash
+cd backend
+php artisan test                       # or: ./vendor/bin/phpunit
+php artisan test --filter=PopulateNetworkTest
+```
+
+> Requires the `php8.2-sqlite3` extension (included in `setup.sh`).
+
 ## Data model
 
 - **users** — account + profile/home-page fields (`headline`, `bio`, `avatar_url`, `location`, `is_active`)
