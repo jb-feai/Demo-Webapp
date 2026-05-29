@@ -14,8 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // SPA cookie auth: make API stateful for our configured frontend domains.
-        $middleware->statefulApi();
+        // This SPA authenticates with Sanctum *bearer tokens* (stored client-side
+        // and sent as `Authorization: Bearer ...`), so we deliberately do NOT call
+        // $middleware->statefulApi(). Stateful/cookie mode would force CSRF
+        // validation on the API and cause "CSRF token mismatch" (419) on login.
 
         // Custom named middleware usable per-route, e.g. ->middleware('active')
         $middleware->alias([
