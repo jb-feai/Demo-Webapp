@@ -1,0 +1,7 @@
+# Keep shell scripts and PHP/JS source LF so they run correctly on Linux/WSL,
+# even when the repo is edited or checked out on Windows.
+*.sh    text eol=lf
+*.php   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+artisan text eol=lf
