@@ -1,0 +1,49 @@
+# Local dev stack: PostgreSQL + PHP-FPM (Laravel) + NGINX.
+# The React frontend is run separately with `npm run dev` (Vite, port 5173),
+# which proxies /api to NGINX/PHP on port 8000.
+#
+#   docker compose up -d
+#   docker compose exec app composer install
+#   docker compose exec app php artisan key:generate
+#   docker compose exec app php artisan migrate --seed
+#
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: neonmarket
+      POSTGRES_USER: neonmarket
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neonmarket"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: php:8.2-fpm-alpine
+    working_dir: /var/www/backend
+    command: sh -c "apk add --no-cache postgresql-dev && docker-php-ext-install pdo pdo_pgsql && php-fpm"
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/neonmarket/backend
+      - ./frontend/dist:/var/www/neonmarket/frontend/dist
+      - ./deploy/nginx/neonmarket.docker.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
